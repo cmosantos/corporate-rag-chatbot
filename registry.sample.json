@@ -1,0 +1,11 @@
+[
+  {
+    "path": "sample-documents/internal-faq.md",
+    "title": "Internal FAQ",
+    "owner": "Knowledge Team",
+    "source_url": "https://intranet.example.invalid/faq",
+    "sensitivity": "internal",
+    "freshness_date": "2026-06-01"
+  }
+]
+
