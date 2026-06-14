@@ -8,8 +8,7 @@
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-009688?logo=fastapi&logoColor=white)
 ![OpenAI](https://img.shields.io/badge/OpenAI-Responses%20API-412991?logo=openai&logoColor=white)
 ![RAG](https://img.shields.io/badge/Architecture-RAG-0A66C2)
-![CI](https://github.com/cmosantos/corporate-rag-chatbot/actions/workflows/ci.yml/badge.svg)
-![License](https://img.shields.io/badge/License-MIT-green.svg)
+![Docker](https://img.shields.io/badge/Container-Docker-2496ED?logo=docker&logoColor=white)
 
 **Document retrieval · Source citations · Tool calling · Access control · Audit logging**
 
@@ -17,23 +16,23 @@
 
 ## Overview
 
-Corporate RAG Chatbot is a portfolio-ready backend for an internal employee assistant. It combines Retrieval-Augmented Generation with approved business tools so employees can ask questions about policies, procedures, tickets and directory information through a single conversational interface.
+Corporate RAG Chatbot is a portfolio-ready backend for an internal employee assistant. It combines Retrieval-Augmented Generation with approved business tools so employees can ask questions about policies, procedures, support tickets and directory information through a single conversational experience.
 
-The assistant is designed to answer from controlled company knowledge rather than relying only on general model knowledge. When supporting evidence is unavailable, it is instructed to say that it does not know instead of inventing an answer.
+The assistant searches controlled company knowledge before answering. When supporting evidence is unavailable, it is instructed to say that it does not know instead of inventing information.
 
-The project also demonstrates practical enterprise concerns such as authentication boundaries, server-side authorization, strict tool schemas, minimal audit logging, safe error handling and document sensitivity controls.
+The project also demonstrates enterprise concerns such as authentication boundaries, server-side authorization, strict tool schemas, minimal audit logging, safe error handling and document sensitivity controls.
 
-> **Project status:** backend foundation completed. A professional web interface is planned with Lovable and will consume the public API after deployment.
+> **Project status:** backend foundation completed. A professional Lovable web interface is being prepared and will connect to the API after backend deployment.
 
 ## Business problem
 
-Internal knowledge is often spread across PDFs, FAQs, onboarding guides, support procedures and multiple business systems. Employees lose time searching for the correct document, while support teams repeatedly answer the same questions.
+Internal knowledge is often distributed across PDFs, FAQs, onboarding guides, support procedures and business systems. Employees lose time looking for the correct document, while support teams repeatedly answer the same questions.
 
 This project provides a controlled conversational layer that can:
 
 - search approved internal documents;
 - return grounded answers with source references;
-- check live information through authorized tools;
+- consult live information through authorized tools;
 - enforce role and department restrictions;
 - reduce repetitive support requests;
 - create an auditable foundation for an enterprise AI assistant.
@@ -42,7 +41,7 @@ This project provides a controlled conversational layer that can:
 
 ```mermaid
 flowchart LR
-    U[Employee] --> W[Web Interface]
+    U[Employee] --> W[Lovable Web Interface]
     W --> G[Identity-aware Gateway]
     G --> A[FastAPI Application]
     A --> R[OpenAI Responses API]
@@ -59,7 +58,7 @@ flowchart LR
 3. The OpenAI Responses API searches approved documents through `file_search`.
 4. When live information is required, the model can request an approved tool.
 5. The server validates authorization and tool arguments before execution.
-6. The final response returns the answer, sources and a safe tool-call summary.
+6. The final response returns the answer, retrieved sources and a safe tool-call summary.
 
 ## Main features
 
@@ -72,9 +71,10 @@ flowchart LR
 | Identity context | User, role and department headers |
 | Authorization | Tool-level permission checks |
 | Ingestion pipeline | Document registry and batch upload script |
-| Auditability | Metadata-focused JSONL audit logging |
+| Auditability | Metadata-focused JSONL logging |
 | Reliability | Health and readiness endpoints |
 | Safety | Controlled errors without secret or trace exposure |
+| Frontend readiness | Configurable CORS and Lovable integration guide |
 
 ## Technology stack
 
@@ -85,8 +85,7 @@ flowchart LR
 - **Pydantic** for configuration and validation
 - **Pytest** for automated tests
 - **Docker** for reproducible deployment
-- **GitHub Actions** for continuous integration
-- **Lovable** for the planned web interface
+- **Lovable** for the web interface
 
 ## Repository structure
 
@@ -109,16 +108,15 @@ corporate-rag-chatbot/
 │   ├── test_rag_service.py
 │   └── test_tools.py
 ├── .env.example
-├── .github/workflows/ci.yml
+├── .dockerignore
 ├── Dockerfile
-├── LICENSE
 ├── pyproject.toml
 └── README.md
 ```
 
 ## Quick start
 
-Clone the repository and enter the project directory:
+Clone the repository:
 
 ```bash
 git clone https://github.com/cmosantos/corporate-rag-chatbot.git
@@ -150,7 +148,7 @@ Start the API:
 uvicorn app.main:app --reload
 ```
 
-Open the interactive API documentation at:
+Interactive API documentation:
 
 ```text
 http://127.0.0.1:8000/docs
@@ -170,6 +168,7 @@ http://127.0.0.1:8000/docs
 | `AUDIT_LOG_PATH` | JSONL audit log destination |
 | `MAX_TOOL_ROUNDS` | Maximum tool execution cycles per request |
 | `ALLOWED_SENSITIVITY_LEVELS` | Document sensitivity ingestion allowlist |
+| `ALLOWED_ORIGINS` | Comma-separated frontend domains allowed by CORS |
 
 Never commit the real `.env` file or production secrets.
 
@@ -231,7 +230,7 @@ python scripts/ingest_documents.py --registry registry.json --vector-store-name 
 
 Copy the generated vector store ID into `OPENAI_VECTOR_STORE_ID` before starting the API.
 
-## Run the tests
+## Tests
 
 ```powershell
 pytest -q
@@ -239,7 +238,7 @@ pytest -q
 
 The tests mock OpenAI and internal API behavior, so they do not require external network access.
 
-## Run with Docker
+## Docker
 
 Build the image:
 
@@ -247,7 +246,7 @@ Build the image:
 docker build -t corporate-rag-chatbot .
 ```
 
-Run the container using the local environment file:
+Run the container:
 
 ```powershell
 docker run --env-file .env -p 8000:8000 corporate-rag-chatbot
@@ -255,7 +254,7 @@ docker run --env-file .env -p 8000:8000 corporate-rag-chatbot
 
 ## Security principles
 
-This project treats RAG as an enterprise application rather than a simple chat interface.
+This project treats RAG as an enterprise application rather than a generic chat interface.
 
 - Source documents and credentials remain on the server.
 - Client-provided identity headers must not be trusted in production.
@@ -266,17 +265,18 @@ This project treats RAG as an enterprise application rather than a simple chat i
 - Unsupported sensitivity levels are rejected during ingestion.
 - Public deployment should include rate limiting, secret management and monitoring.
 
-See [Security Notes](docs/security.md) and [Deployment Notes](docs/deployment.md) for more details.
+See [Security Notes](docs/security.md) and [Deployment Notes](docs/deployment.md).
 
-## Frontend plan
+## Lovable frontend
 
-The Lovable interface will provide a clean corporate chat experience with:
+The Lovable interface is designed to provide:
 
+- a professional corporate dashboard;
 - responsive desktop and mobile layouts;
 - suggested employee questions;
 - answer cards with document citations;
-- visible loading and error states;
-- a demo mode for portfolio presentation;
+- visible loading, empty and error states;
+- a portfolio demo mode;
 - an environment-based API URL without exposing server credentials.
 
 See [Frontend Integration](docs/frontend-integration.md).
@@ -289,7 +289,8 @@ See [Frontend Integration](docs/frontend-integration.md).
 - [x] Implement approved internal tools
 - [x] Add authorization and audit foundations
 - [x] Add automated tests
-- [x] Add Docker and continuous integration
+- [x] Add Docker support
+- [x] Prepare the backend for a separate web frontend
 - [ ] Deploy the backend to a managed cloud service
 - [ ] Publish the Lovable frontend
 - [ ] Add enterprise identity provider integration
@@ -308,7 +309,3 @@ It is designed as a realistic foundation for an internal support or knowledge-ma
 IT Support Professional focused on Microsoft 365, cloud computing, AI agents and workflow automation.
 
 [![GitHub](https://img.shields.io/badge/GitHub-cmosantos-181717?logo=github&logoColor=white)](https://github.com/cmosantos)
-
-## License
-
-Distributed under the MIT License. See [LICENSE](LICENSE) for details.
